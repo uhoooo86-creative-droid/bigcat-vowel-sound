@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Vowel Monster Game</title>
+  <style>
+    :root {
+      --bg-color: #fdfdfd;
+      --main-color: #333;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-color);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif;
+      touch-action: manipulation;
+    }
+
+    #game-stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    /* 캐릭터 */
+    #hero {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 120px;
+      border: 6px solid #1a1a1a;
+      border-radius: 50% 50% 45% 45%;
+      background: #fff;
+      transition: transform 0.1s ease-out, background-color 0.1s ease-out;
+      z-index: 5;
+    }
+
+    .eyes {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      margin-top: 20px;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .nose {
+      font-size: 18px;
+      text-align: center;
+      margin-top: -5px;
+      color: #1a1a1a;
+      font-weight: bold;
+    }
+
+    .mouth {
+      width: 60px;
+      height: 50px;
+      background: #ff4d4d;
+      border-radius: 50%;
+      margin: 5px auto;
+      border: 3px solid #333;
+      position: relative;
+      overflow: hidden;
+      transform-origin: center center;
+      transition: transform 0.1s ease-out;
+    }
+
+    .mouth::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 50%;
+      background: rgba(0,0,0,0.1);
+    }
+
+    /* 떨어지는 단어 */
+    .word-item {
+      position: absolute;
+      padding: 12px 24px;
+      background: #fff;
+      border: 3px solid #1a1a1a;
+      border-radius: 30px;
+      font-weight: 900;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    /* 상단 UI: 점수/목숨 + 버튼들 */
+    #score-board {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 800;
+      z-index: 10;
+      color: #333;
+      user-select: none;
+    }
+
+    #admin-open-btn,
+    #bgm-toggle-btn {
+      position: absolute;
+      top: 10px;
+      z-index: 11;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 16px;
+      border: 1px solid #333;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    #bgm-toggle-btn {
+      left: 10px;
+    }
+
+    #admin-open-btn {
+      right: 10px;
+    }
+
+    .heart {
+      color: #ff4d4d;
+      font-size: 24px;
+    }
+
+    /* 정답/오답 이펙트 */
+    #result-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 80px;
+      pointer-events: none;
+      transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+      opacity: 0;
+      z-index: 20;
+    }
+
+    /* 관리자 모달 */
+    #admin-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+    }
+
+    #admin-panel {
+      background: #fff;
+      border-radius: 12px;
+      max-width: 480px;
+      width: 92%;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      font-size: 14px;
+    }
+
+    #admin-panel h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    #admin-panel h3 {
+      margin: 12px 0 4px;
+      font-size: 14px;
+    }
+
+    #admin-panel small {
+      color: #666;
+    }
+
+    .admin-textarea {
+      width: 100%;
+      height: 100px;
+      margin-top: 4px;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 8px;
+    }
+
+    #admin-note {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #444;
+      line-height: 1.4;
+    }
+
+    #admin-buttons {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    #admin-buttons button {
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      cursor: pointer;
+    }
+
+    #admin-save-btn {
+      background: #4caf50;
+      color: #fff;
+      border-color: #4caf50;
+    }
+
+    #admin-close-btn {
+      background: #eee;
+    }
+
+    /* 모음 선택 배너 */
+    #vowel-select-row {
+      margin-bottom: 6px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #vowel-select-row select {
+      font-size: 13px;
+      padding: 2px 6px;
+    }
+
+    #custom-vowel-input {
+      width: 30px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-stage">
+    <div id="score-board">
+      SCORE: <span id="score">0</span>
+      <br>
+      <span id="lives">❤️❤️❤️</span>
+    </div>
+
+    <button id="bgm-toggle-btn">🔊 BGM</button>
+    <button id="admin-open-btn">관리자</button>
+
+    <div id="hero">
+      <div class="eyes"><span>a</span><span>e</span></div>
+      <div class="nose">i</div>
+      <div class="mouth" id="hero-mouth"></div>
+    </div>
+
+    <div id="result-icon"></div>
+  </div>
+
+  <!-- 효과음 + 배경 음악 -->
+  <audio id="sfx-correct" src="correct.mp3" preload="auto"></audio>
+  <audio id="sfx-wrong" src="wrong.mp3" preload="auto"></audio>
+  <audio id="bgm-audio"  src="bgm_happy.mp3" preload="auto" loop></audio>
+
+  <!-- 관리자 모달 -->
+  <div id="admin-modal">
+    <div id="admin-panel">
+      <h2>단어 & 모음 관리</h2>
+      <div id="vowel-select-row">
+        <span>타겟 모음:</span>
+        <select id="vowel-select">
+          <option value="A">A</option>
+          <option value="E">E</option>
+          <option value="I">I</option>
+          <option value="O">O</option>
+          <option value="U">U</option>
+          <option value="CUSTOM">커스텀</option>
+        </select>
+        <input id="custom-vowel-input" maxlength="1" placeholder="V" />
+      </div>
+      <small>선택한 모음이 들어 있는 단어만 정답(타겟)으로 처리됩니다.</small>
+
+      <h3>타겟 단어 (모음 포함)</h3>
+      <textarea id="target-textarea" class="admin-textarea"></textarea>
+
+      <h3>기타 단어 (모음 미포함)</h3>
+      <textarea id="other-textarea" class="admin-textarea"></textarea>
+
+      <div id="admin-note">
+        · 타겟 단어: 선택한 모음이 들어 있는 단어 (먹으면 정답 처리)<br>
+        · 기타 단어: 그 모음이 없는 단어 (잘못 누르면 오답 처리)
+      </div>
+
+      <div id="admin-buttons">
+        <button id="admin-close-btn">닫기</button>
+        <button id="admin-save-btn">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const stage = document.getElementById('game-stage');
+    const scoreDisplay = document.getElementById('score');
+    const livesDisplay = document.getElementById('lives');
+    const mouth = document.getElementById('hero-mouth');
+    const hero = document.getElementById('hero');
+    const resultIcon = document.getElementById('result-icon');
+
+    const adminOpenBtn = document.getElementById('admin-open-btn');
+    const adminModal = document.getElementById('admin-modal');
+    const adminCloseBtn = document.getElementById('admin-close-btn');
+    const adminSaveBtn = document.getElementById('admin-save-btn');
+    const targetTextarea = document.getElementById('target-textarea');
+    const otherTextarea = document.getElementById('other-textarea');
+
+    const vowelSelect = document.getElementById('vowel-select');
+    const customVowelInput = document.getElementById('custom-vowel-input');
+
+    const bgmToggleBtn = document.getElementById('bgm-toggle-btn');
+
+    const correctSound = document.getElementById('sfx-correct');
+    const wrongSound = document.getElementById('sfx-wrong');
+    const bgmAudio   = document.getElementById('bgm-audio');
+
+    let soundEnabled = false;
+    let bgmEnabled = true;
+
+    let score = 0;
+    let lives = 3;
+    let isGameOver = false;
+    let gameTimer = null;
+
+    // 기본값: A 게임
+    let currentVowel = 'A';
+
+    const defaultWordSets = {
+  A: {
+    target: [
+      "APPLE","ANT","AX","ALLIGATOR","AQUA",
+      "BANANA","CAKE","DANCE","EAGLE","FACE","GAME"
+    ],
+    other: [
+      "BLUE","DOG","FISH","ICE","MOON","SUN","TREE","RED","PIG","HEN"
+    ]
+  },
+  E: {
+    target: [
+      "EGG","ELEPHANT","ENVELOPE","ENGINE","EEL",
+      "BED","LEG","TEETH","SHEEP","RED","PEN","NET","WEB"
+    ],
+    other: [
+      "DOG","CAT","SUN","MOON","PIG","BUS","CUP","HAT","BOOK"
+    ]
+  },
+  I: {
+    target: [
+      "INK","IGLOO","INSECT","ITALY","IRON",
+      "PIG","FISH","MILK","KING","HILL","LIP","RING","ZIP"
+    ],
+    other: [
+      "DOG","CAT","SUN","MOON","BED","CUP","BALL","FOX","DUCK"
+    ]
+  },
+  O: {
+    target: [
+      "OCTOPUS","ORANGE","OSTRICH","ONION","OLIVE",
+      "DOG","BOX","FROG","CORN","DOT","POT","TOP","MOP","ROCK"
+    ],
+    other: [
+      "CAT","PEN","TREE","HILL","SUN","BEE","MILK","FAN","CUP"
+    ]
+  },
+  U: {
+    target: [
+      "UMBRELLA","UNICORN","UP","UNDER","USB",
+      "SUN","BUS","CUP","BUG","MUD","NUT","GUM","TUB","PUP"
+    ],
+    other: [
+      "DOG","CAT","BED","PEN","MOON","TREE","FOX","PIG","HAT"
+    ]
+  }
+};
+
+    // 현재 사용 리스트
+    let targetWords = [];
+    let otherWords  = [];
+
+    const STORAGE_KEY = 'vowel_monster_settings';
+
+    function loadSettings() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const obj = JSON.parse(saved);
+          if (obj) {
+            if (obj.vowel) {
+              currentVowel = obj.vowel;
+            }
+            if (obj.wordSets && obj.wordSets[currentVowel]) {
+              targetWords = obj.wordSets[currentVowel].target || [];
+              otherWords  = obj.wordSets[currentVowel].other  || [];
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (!targetWords.length || !otherWords.length) {
+        const base = defaultWordSets[currentVowel] || defaultWordSets.A;
+        targetWords = base.target.slice();
+        otherWords  = base.other.slice();
+      }
+
+      // UI에 반영
+      if (['A','E','I','O','U'].includes(currentVowel)) {
+        vowelSelect.value = currentVowel;
+        customVowelInput.value = '';
+      } else {
+        vowelSelect.value = 'CUSTOM';
+        customVowelInput.value = currentVowel;
+      }
+    }
+
+    function saveSettings() {
+      // 전체 모음 세트 중, 현재 모음 세트만 업데이트해서 저장
+      let data = { vowel: currentVowel, wordSets: {} };
+
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const obj = JSON.parse(saved);
+          if (obj && obj.wordSets) {
+            data.wordSets = obj.wordSets;
+          }
+        } catch (e) {}
+      }
+
+      data.wordSets[currentVowel] = {
+        target: targetWords,
+        other : otherWords
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function openAdminModal() {
+      targetTextarea.value = targetWords.join('\\n');
+      otherTextarea.value  = otherWords.join('\\n');
+      adminModal.style.display = 'flex';
+    }
+
+    function closeAdminModal() {
+      adminModal.style.display = 'none';
+    }
+
+    adminOpenBtn.addEventListener('click', openAdminModal);
+    adminCloseBtn.addEventListener('click', closeAdminModal);
+
+    vowelSelect.addEventListener('change', () => {
+      const sel = vowelSelect.value;
+      if (sel === 'CUSTOM') {
+        customVowelInput.focus();
+      } else {
+        currentVowel = sel;
+        // 해당 모음에 대한 기존 저장/기본값 로드
+        targetWords = [];
+        otherWords  = [];
+        loadSettings(); // currentVowel 기준으로 다시 로드
+        targetTextarea.value = targetWords.join('\\n');
+        otherTextarea.value  = otherWords.join('\\n');
+      }
+    });
+
+    customVowelInput.addEventListener('input', () => {
+      let v = customVowelInput.value.toUpperCase().replace(/[^A-Z]/g, '');
+      if (v.length > 1) v = v[0];
+      customVowelInput.value = v;
+      if (v) {
+        currentVowel = v;
+        targetWords = [];
+        otherWords  = [];
+        loadSettings();
+        targetTextarea.value = targetWords.join('\\n');
+        otherTextarea.value  = otherWords.join('\\n');
+      }
+    });
+
+    adminSaveBtn.addEventListener('click', () => {
+      const tLines = targetTextarea.value
+        .split('\\n')
+        .map(v => v.trim().toUpperCase())
+        .filter(v => v.length > 0);
+      const oLines = otherTextarea.value
+        .split('\\n')
+        .map(v => v.trim().toUpperCase())
+        .filter(v => v.length > 0);
+
+      if (!tLines.length) {
+        alert('타겟 단어를 최소 1개 이상 입력해주세요.');
+        return;
+      }
+      if (!oLines.length) {
+        alert('기타 단어를 최소 1개 이상 입력해주세요.');
+        return;
+      }
+
+      targetWords = tLines;
+      otherWords  = oLines;
+      saveSettings();
+      closeAdminModal();
+      alert('설정이 저장되었습니다.\\n선택한 모음에 맞는 단어로 게임이 진행됩니다.');
+    });
+
+    // 사운드 잠금 해제 + BGM[web:44][web:35]
+    function initSoundOnce() {
+      if (soundEnabled) return;
+      soundEnabled = true;
+
+      [correctSound, wrongSound, bgmAudio].forEach(a => {
+        if (!a) return;
+        a.volume = (a === bgmAudio) ? 0.4 : 1.0;
+      });
+
+      [correctSound, wrongSound, bgmAudio].forEach(a => {
+        if (!a) return;
+        a.play().then(() => {
+          a.pause();
+          a.currentTime = 0;
+        }).catch(() => {});
+      });
+
+      if (bgmEnabled) {
+        bgmAudio.currentTime = 0;
+        bgmAudio.play().catch(() => {});
+      }
+
+      document.removeEventListener('touchstart', initSoundOnce);
+      document.removeEventListener('click', initSoundOnce);
+    }
+
+    document.addEventListener('touchstart', initSoundOnce, { once: true });
+    document.addEventListener('click', initSoundOnce, { once: true });
+
+    bgmToggleBtn.addEventListener('click', () => {
+      if (!soundEnabled) initSoundOnce();
+      bgmEnabled = !bgmEnabled;
+      if (bgmEnabled) {
+        bgmAudio.currentTime = 0;
+        bgmAudio.play().catch(() => {});
+        bgmToggleBtn.textContent = "🔊 BGM";
+      } else {
+        bgmAudio.pause();
+        bgmToggleBtn.textContent = "🔈 BGM OFF";
+      }
+    });
+
+    function playCorrectSound() {
+      if (!soundEnabled || !correctSound) return;
+      correctSound.currentTime = 0;
+      correctSound.play().catch(() => {});
+    }
+
+    function playWrongSound() {
+      if (!soundEnabled || !wrongSound) return;
+      wrongSound.currentTime = 0;
+      wrongSound.play().catch(() => {});
+    }
+
+    function showResultIcon(type) {
+      resultIcon.textContent = (type === 'correct') ? '💖' : '💀';
+      resultIcon.style.opacity = '1';
+      resultIcon.style.transform = 'translate(-50%, -50%) scale(1.2)';
+      setTimeout(() => {
+        resultIcon.style.opacity = '0';
+        resultIcon.style.transform = 'translate(-50%, -50%) scale(0)';
+      }, 400);
+    }
+
+    function spawnWord() {
+      if (isGameOver) return;
+      if (!targetWords.length || !otherWords.length) return;
+
+      const isTarget = Math.random() < 0.5;
+      const wordText = isTarget
+        ? targetWords[Math.floor(Math.random() * targetWords.length)]
+        : otherWords[Math.floor(Math.random() * otherWords.length)];
+
+      const wordNode = document.createElement('div');
+      wordNode.className = 'word-item';
+      wordNode.innerText = wordText;
+
+      const posX = Math.random() * (window.innerWidth - 120);
+      wordNode.style.left = posX + 'px';
+      wordNode.style.top = '-60px';
+      stage.appendChild(wordNode);
+
+      let currentY = -60;
+      const speed = 2 + Math.min(score * 0.1, 6);
+
+      const moveInterval = setInterval(() => {
+        if (isGameOver) {
+          clearInterval(moveInterval);
+          wordNode.remove();
+          return;
+        }
+
+        currentY += speed;
+        wordNode.style.top = currentY + 'px';
+
+        if (currentY > window.innerHeight) {
+          if (isTarget) {
+            reduceLife();
+          }
+          clearInterval(moveInterval);
+          wordNode.remove();
+        }
+      }, 16);
+
+      function handleWordTap(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isTarget) {
+          score += 10;
+          scoreDisplay.innerText = score;
+
+          mouth.style.transform = "scaleY(1.5)";
+          setTimeout(() => mouth.style.transform = "scaleY(1)", 150);
+
+          showResultIcon('correct');
+          playCorrectSound();
+        } else {
+          reduceLife();
+          showResultIcon('wrong');
+          playWrongSound();
+        }
+
+        clearInterval(moveInterval);
+        wordNode.remove();
+      }
+
+      wordNode.addEventListener('pointerdown', handleWordTap);
+      wordNode.addEventListener('touchstart', handleWordTap);
+      wordNode.addEventListener('click', handleWordTap);
+    }
+
+    function reduceLife() {
+      lives--;
+      livesDisplay.innerText = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+
+      hero.style.backgroundColor = "#ffcccc";
+      setTimeout(() => hero.style.backgroundColor = "#fff", 200);
+
+      if (lives <= 0) {
+        isGameOver = true;
+        setTimeout(() => {
+          alert("GAME OVER!\\n최종 점수: " + score);
+          location.reload();
+        }, 100);
+      }
+    }
+
+    loadSettings();
+    gameTimer = setInterval(spawnWord, 1200);
+  </script>
+</body>
+</html>
