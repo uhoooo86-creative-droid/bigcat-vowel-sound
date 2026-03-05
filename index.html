@@ -95,45 +95,6 @@ body {
   border-radius:20px; padding:5px 14px; color:white; font-size:0.95rem;
   box-shadow:0 3px 10px rgba(167,139,250,0.3);
 }
-#home-btn {
-  background:white; border:3px solid #ffd6ec; border-radius:50%;
-  width:38px; height:38px; font-size:1.1rem; cursor:pointer;
-  box-shadow:0 3px 8px rgba(255,107,157,0.2);
-  display:flex; align-items:center; justify-content:center;
-  transition:all 0.12s; padding:0;
-}
-#home-btn:active{transform:scale(0.92)}
-
-/* STAGE SELECT */
-#stage-select-grid {
-  display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
-}
-.stage-sel-btn {
-  border-radius:16px; border:3px solid #ffd6ec;
-  background:white; cursor:pointer;
-  font-family:'Jua',sans-serif;
-  padding:10px 4px; text-align:center;
-  transition:all 0.15s; position:relative; top:0;
-  box-shadow:0 4px 0 #ffc0d8;
-}
-.stage-sel-btn:active{top:3px;box-shadow:0 1px 0 #ffc0d8}
-.stage-sel-btn.selected {
-  background:linear-gradient(135deg,#ff6b9d,#ff9bc7);
-  border-color:#e0527d; color:white;
-  box-shadow:0 4px 0 #e0527d;
-}
-.stage-sel-btn .s-num {
-  font-size:1.1rem; font-weight:bold; display:block;
-  color:inherit;
-}
-.stage-sel-btn .s-label {
-  font-size:0.7rem; display:block; margin-top:2px;
-  color:inherit; opacity:0.8;
-}
-.stage-sel-btn .s-tag {
-  font-size:0.65rem; display:inline-block; margin-top:3px;
-  padding:1px 7px; border-radius:10px; color:white;
-}
 
 /* PROGRESS */
 #progress-area{width:100%;padding:7px 14px;background:white}
@@ -376,15 +337,6 @@ body {
   <div id="start-title">🍞 빅캣의<br>모음 모험!</div>
   <div id="start-sub">단어를 듣고 모음 소리를 찾아요!</div>
   <img id="start-char" src="" alt="">
-
-  <!-- STAGE SELECT -->
-  <div class="info-box" style="margin-bottom:14px">
-    <div style="font-size:0.9rem;color:#ff6b9d;font-weight:bold;margin-bottom:10px;text-align:center">📚 시작 단계 선택</div>
-    <div id="stage-select-grid">
-      <!-- JS로 채움 -->
-    </div>
-  </div>
-
   <div class="info-box">
     <div class="info-row"><span class="ic">🔊</span><span>단어 카드를 누르면 읽어줘요</span></div>
     <div class="info-row"><span class="ic">👂</span><span>들려주는 단어의 모음 소리를 찾아요</span></div>
@@ -403,10 +355,7 @@ body {
       <span class="heart" id="h1">❤️</span>
       <span class="heart" id="h2">❤️</span>
     </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <div id="level-box">스테이지 <span id="stage-val">1</span></div>
-      <button id="home-btn" onclick="goHome()" title="처음으로">🏠</button>
-    </div>
+    <div id="level-box">스테이지 <span id="stage-val">1</span></div>
   </div>
 
   <div id="progress-area">
@@ -427,10 +376,7 @@ body {
 
   <!-- WORD CARD -->
   <div id="word-display-area">
-    <div id="word-instruction" style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
-      <span id="mode-badge" style="background:linear-gradient(135deg,#fb923c,#fbbf24);color:white;border-radius:14px;padding:3px 12px;font-size:0.78rem">🔤 단모음</span>
-      <span>단어를 눌러서 들어봐요!</span>
-    </div>
+    <div id="word-instruction">👇 단어를 눌러서 들어봐요!</div>
     <div id="word-card-big" onclick="speakWord()">
       <div id="big-word-text">APPLE</div>
       <div id="big-word-kr">사과</div>
@@ -481,73 +427,36 @@ const IMGS = {
 
 // ======== WORD BANK ========
 // format: [영단어, 한국어뜻, 정답모음]
-
-// 단모음 (Short Vowels) - 스테이지 1~3
-const WORDS_SHORT = {
+const WORDS = {
   A: [
     ['apple','사과','A'],['ant','개미','A'],['cat','고양이','A'],['hat','모자','A'],
     ['map','지도','A'],['bag','가방','A'],['fan','선풍기','A'],['hand','손','A'],
     ['lamp','램프','A'],['sand','모래','A'],['dance','춤','A'],['plant','식물','A'],
-    ['candy','사탕','A'],['happy','행복한','A'],['clap','박수','A'],
+    ['candy','사탕','A'],['happy','행복한','A'],['fancy','멋진','A'],
   ],
   E: [
     ['egg','달걀','E'],['bed','침대','E'],['pen','펜','E'],['hen','암탉','E'],
     ['red','빨간','E'],['web','거미줄','E'],['leg','다리','E'],['pet','반려동물','E'],
     ['bell','종','E'],['tent','텐트','E'],['nest','둥지','E'],['sled','썰매','E'],
-    ['spell','맞춤법','E'],['shelf','선반','E'],['neck','목','E'],
+    ['spell','맞춤법','E'],['shelf','선반','E'],
   ],
   I: [
     ['pig','돼지','I'],['fish','물고기','I'],['milk','우유','I'],['six','여섯','I'],
     ['hill','언덕','I'],['kick','차다','I'],['lips','입술','I'],['gift','선물','I'],
-    ['rich','부유한','I'],['wind','바람','I'],['swim','수영','I'],
-    ['stick','막대기','I'],['print','인쇄','I'],['grill','그릴','I'],['fist','주먹','I'],
+    ['rich','부유한','I'],['wind','바람','I'],['bridge','다리','I'],['swim','수영','I'],
+    ['stick','막대기','I'],['print','인쇄','I'],
   ],
   O: [
     ['dog','개','O'],['fox','여우','O'],['hop','깡충뛰다','O'],['mom','엄마','O'],
     ['pot','냄비','O'],['box','상자','O'],['rock','바위','O'],['sock','양말','O'],
     ['pond','연못','O'],['stop','멈추다','O'],['frog','개구리','O'],['clock','시계','O'],
-    ['block','블록','O'],['knock','두드리다','O'],['blob','방울','O'],
+    ['block','블록','O'],['knob','손잡이','O'],
   ],
   U: [
     ['bug','벌레','U'],['cup','컵','U'],['sun','태양','U'],['bun','빵','U'],
     ['mud','진흙','U'],['fun','재미','U'],['run','달리다','U'],['hug','안다','U'],
-    ['jump','점프','U'],['drum','드럼','U'],['plug','플러그','U'],
-    ['thumb','엄지','U'],['brush','솔','U'],['truck','트럭','U'],['bunch','다발','U'],
-  ]
-};
-
-// 장모음 (Long Vowels) - 스테이지 4+
-// 정답모음 뒤에 'L' 붙여서 장모음 표시
-const WORDS_LONG = {
-  A: [ // /eɪ/ 소리
-    ['cake','케이크','A'],['name','이름','A'],['late','늦은','A'],['tape','테이프','A'],
-    ['flame','불꽃','A'],['plane','비행기','A'],['grade','학년','A'],['brave','용감한','A'],
-    ['snake','뱀','A'],['lake','호수','A'],['space','우주','A'],['race','경주','A'],
-    ['shape','모양','A'],['wave','파도','A'],['tale','이야기','A'],
-  ],
-  E: [ // /iː/ 소리
-    ['feet','발','E'],['sleep','잠','E'],['tree','나무','E'],['green','초록','E'],
-    ['street','거리','E'],['wheel','바퀴','E'],['sheep','양','E'],['teeth','이빨','E'],
-    ['breeze','미풍','E'],['cheese','치즈','E'],['queen','여왕','E'],['sweet','달콤한','E'],
-    ['speak','말하다','E'],['clean','깨끗한','E'],['beach','해변','E'],
-  ],
-  I: [ // /aɪ/ 소리
-    ['bike','자전거','I'],['kite','연','I'],['time','시간','I'],['shine','빛나다','I'],
-    ['smile','미소','I'],['slide','미끄럼틀','I'],['prize','상','I'],['drive','운전','I'],
-    ['white','하얀','I'],['nine','아홉','I'],['rice','쌀','I'],['fire','불','I'],
-    ['night','밤','I'],['sky','하늘','I'],['write','쓰다','I'],
-  ],
-  O: [ // /oʊ/ 소리
-    ['bone','뼈','O'],['home','집','O'],['rope','밧줄','O'],['note','노트','O'],
-    ['globe','지구본','O'],['smoke','연기','O'],['stone','돌','O'],['phone','전화기','O'],
-    ['snow','눈','O'],['flow','흐르다','O'],['throw','던지다','O'],['bowl','그릇','O'],
-    ['road','도로','O'],['toast','토스트','O'],['boat','보트','O'],
-  ],
-  U: [ // /juː/ 소리
-    ['cube','정육면체','U'],['tune','멜로디','U'],['mule','노새','U'],['cute','귀여운','U'],
-    ['huge','거대한','U'],['flute','플루트','U'],['dune','모래언덕','U'],['fume','연기','U'],
-    ['blue','파란','U'],['clue','단서','U'],['glue','풀','U'],['true','진실의','U'],
-    ['fruit','과일','U'],['juice','주스','U'],['moon','달','U'],
+    ['jump','점프','U'],['drum','드럼','U'],['plug','플러그','U'],['skull','해골','U'],
+    ['thumb','엄지','U'],['brush','솔','U'],
   ]
 };
 
@@ -568,9 +477,8 @@ const G = {
   score:0, lives:3, stage:1, mood:50,
   combo:0, maxCombo:0, totalQ:0, correctQ:0,
   stageProgress:0, correctPerStage:8,
-  answered:false, gameActive:false,
+  currentWord:null, answered:false, gameActive:false,
   usedWords: new Set(),
-  isLongVowel: false, // false=단모음, true=장모음
 };
 
 // ======== SPEECH ========
@@ -607,47 +515,12 @@ function speakWord() {
   speak(G.currentWord[0]);
 }
 
-// ======== STAGE DEFINITIONS ========
-const STAGE_DEFS = [
-  {stage:1, label:'단모음 입문',  tag:'🔤 단모음', tagColor:'#fb923c'},
-  {stage:2, label:'단모음 기초',  tag:'🔤 단모음', tagColor:'#fb923c'},
-  {stage:3, label:'단모음 완성',  tag:'🔤 단모음', tagColor:'#fb923c'},
-  {stage:4, label:'장모음 입문',  tag:'🎵 장모음', tagColor:'#a78bfa'},
-  {stage:5, label:'장모음 기초',  tag:'🎵 장모음', tagColor:'#a78bfa'},
-  {stage:6, label:'장모음 도전',  tag:'🎵 장모음', tagColor:'#a78bfa'},
-  {stage:7, label:'장모음 심화',  tag:'🎵 장모음', tagColor:'#a78bfa'},
-  {stage:8, label:'종합 마스터',  tag:'🏆 종합',   tagColor:'#f59e0b'},
-  {stage:9, label:'챔피언 도전!', tag:'👑 최고난도', tagColor:'#ef4444'},
-];
-
-let selectedStartStage = 1;
-
 // ======== INIT ========
 function init() {
   document.getElementById('start-char').src = IMGS.heart_eyes_happy;
   document.getElementById('gameover-img').src = IMGS.crying;
-
-  // Build stage select grid
-  const grid = document.getElementById('stage-select-grid');
-  grid.innerHTML = '';
-  STAGE_DEFS.forEach(def => {
-    const btn = document.createElement('button');
-    btn.className = 'stage-sel-btn' + (def.stage===1?' selected':'');
-    btn.dataset.stage = def.stage;
-    btn.innerHTML = `
-      <span class="s-num">스테이지 ${def.stage}</span>
-      <span class="s-label">${def.label}</span>
-      <span class="s-tag" style="background:${def.tagColor}">${def.tag}</span>
-    `;
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.stage-sel-btn').forEach(b=>b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedStartStage = def.stage;
-      playClickSound();
-    });
-    grid.appendChild(btn);
-  });
-
+  document.getElementById('stage-clear-img').src = IMGS.heart_eyes_laugh;
+  // Preload voices
   if(synth.onvoiceschanged !== undefined) synth.onvoiceschanged = ()=>{};
   synth.getVoices();
 }
@@ -655,59 +528,36 @@ function init() {
 // ======== START ========
 function startGame() {
   synth.cancel();
-  const startStage = selectedStartStage || 1;
   Object.assign(G,{
-    score:0, lives:3, stage:startStage, mood:50,
-    combo:0, maxCombo:0, totalQ:0, correctQ:0,
-    stageProgress:0, correctPerStage: Math.min(12, 8 + Math.floor(startStage/2)),
-    answered:false, gameActive:true,
+    score:0,lives:3,stage:1,mood:50,
+    combo:0,maxCombo:0,totalQ:0,correctQ:0,
+    stageProgress:0,correctPerStage:8,
+    answered:false,gameActive:true,
     usedWords:new Set()
   });
   showScreen('game-screen');
-  // Restore stage-clear to default
-  document.getElementById('stage-clear').innerHTML = `
-    <h2>🎉 스테이지 클리어!</h2>
-    <img id="stage-clear-img" src="${IMGS.heart_eyes_laugh}" alt="">
-    <div style="font-size:1.1rem;color:#888;margin-top:4px" id="clear-score"></div>
-    <button id="btn-next" onclick="nextStage()">다음 스테이지 ▶</button>
-  `;
   updateTopBar(); updateMood(); updateProgress();
   playStart();
-  // 장모음 스테이지에서 시작할 경우 바로 안내
-  if(startStage >= 4 && startStage === 4) {
-    setTimeout(showLongVowelIntro, 500);
-  } else {
-    setTimeout(nextQuestion, 400);
-  }
+  setTimeout(nextQuestion, 400);
 }
 
 // ======== NEXT QUESTION ========
 function nextQuestion() {
   if(!G.gameActive) return;
   G.answered = false;
-  G.isLongVowel = G.stage >= 4;
 
   // Reset vowel buttons
   document.querySelectorAll('.vowel-choice-btn').forEach(b=>{
     b.className = 'vowel-choice-btn active-vowel';
     b.disabled = false;
   });
-
-  // Update instruction based on mode
-  const modeLabel = G.isLongVowel
-    ? '🎵 장모음 소리를 찾아요! (e.g. cake=에이, tree=이이)'
-    : '👇 단어를 눌러서 들어봐요!';
-  document.getElementById('word-instruction').textContent = modeLabel;
+  document.getElementById('word-instruction').textContent = '👇 단어를 눌러서 들어봐요!';
   document.getElementById('speak-icon').textContent = '🔊 눌러서 듣기';
 
-  // Update stage mode badge
-  updateModeBadge();
-
-  // Pick random word from correct bank
-  const bank = G.isLongVowel ? WORDS_LONG : WORDS_SHORT;
-  const allWords = Object.values(bank).flat();
+  // Pick random word (avoid repeats until all used)
+  const allWords = Object.values(WORDS).flat();
   let available = allWords.filter(w=>!G.usedWords.has(w[0]));
-  if(available.length < 3){ G.usedWords.clear(); available = allWords; }
+  if(available.length < 3) { G.usedWords.clear(); available = allWords; }
   G.currentWord = available[Math.floor(Math.random()*available.length)];
   G.usedWords.add(G.currentWord[0]);
 
@@ -715,7 +565,7 @@ function nextQuestion() {
   document.getElementById('big-word-text').textContent = G.currentWord[0].toUpperCase();
   document.getElementById('big-word-kr').textContent = G.currentWord[1];
 
-  // Auto-speak
+  // Auto-speak after short delay
   setTimeout(()=>speak(G.currentWord[0]), 300);
 }
 
@@ -847,64 +697,8 @@ function nextStage() {
   G.stageProgress = 0;
   G.correctPerStage = Math.min(12, 8 + Math.floor(G.stage/2));
   G.mood = Math.min(100, G.mood + 15);
-  G.usedWords.clear(); // 새 스테이지마다 단어 초기화
   updateTopBar(); updateProgress(); updateMood();
-  // 스테이지 4 진입 시 장모음 안내
-  if(G.stage === 4) showLongVowelIntro();
-  else nextQuestion();
-}
-
-function showLongVowelIntro() {
-  const overlay = document.getElementById('stage-clear');
-  overlay.classList.add('show');
-  overlay.innerHTML = `
-    <div style="font-size:2rem;margin-bottom:6px">🎵</div>
-    <h2 style="font-size:2rem">장모음 시작!</h2>
-    <img src="${IMGS.sparkle_excited}" style="width:150px;object-fit:contain;margin:10px 0;animation:charFloat 1s ease-in-out infinite">
-    <div style="background:white;border-radius:16px;padding:14px 20px;margin:10px 0;max-width:300px;border:3px solid #ffd6ec;font-size:0.9rem;color:#555;line-height:1.9">
-      <b style="color:#ff6b9d">이제 장모음이에요!</b><br>
-      🔤 A → <b>/에이/</b> cake, name<br>
-      🔤 E → <b>/이이/</b> tree, feet<br>
-      🔤 I → <b>/아이/</b> bike, kite<br>
-      🔤 O → <b>/오우/</b> home, bone<br>
-      🔤 U → <b>/유우/</b> cute, blue
-    </div>
-    <button id="btn-next" onclick="startLongVowel()" style="margin-top:12px;background:linear-gradient(135deg,#ff6b9d,#ff9bc7);color:white;border:none;border-radius:50px;font-family:'Jua',sans-serif;font-size:1.2rem;padding:14px 40px;cursor:pointer;box-shadow:0 5px 0 #e0527d">준비됐어요! ▶</button>
-  `;
-}
-
-function startLongVowel() {
-  const overlay = document.getElementById('stage-clear');
-  overlay.classList.remove('show');
-  // restore original stage-clear content for future use
-  overlay.innerHTML = `
-    <h2>🎉 스테이지 클리어!</h2>
-    <img id="stage-clear-img" src="${IMGS.heart_eyes_laugh}" alt="">
-    <div style="font-size:1.1rem;color:#888;margin-top:4px" id="clear-score"></div>
-    <button id="btn-next" onclick="nextStage()">다음 스테이지 ▶</button>
-  `;
   nextQuestion();
-}
-
-function updateModeBadge() {
-  const lbl = document.getElementById('mode-badge');
-  if(!lbl) return;
-  if(G.stage >= 4){
-    lbl.textContent = '🎵 장모음';
-    lbl.style.background = 'linear-gradient(135deg,#a78bfa,#c084fc)';
-    lbl.style.display = 'inline-block';
-  } else {
-    lbl.textContent = '🔤 단모음';
-    lbl.style.background = 'linear-gradient(135deg,#fb923c,#fbbf24)';
-    lbl.style.display = 'inline-block';
-  }
-}
-
-function goHome() {
-  if(!confirm('처음 화면으로 돌아갈까요? 진행상황이 사라져요!')) return;
-  G.gameActive = false;
-  synth.cancel();
-  showScreen('start-screen');
 }
 
 // ======== GAME OVER ========
